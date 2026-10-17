@@ -175,6 +175,7 @@ button,input,select,#ttl{touch-action:manipulation}
 </main>
 
 <script src="imorun.clocksite.js.utils.min.js"></script>
+<script src="winbox0.2.82.bundle.min.js"></script>
 <script>
 (function(){
   var REF=[[30,"ささやき声"],[60,"普通の会話"],[85,"交通量の多い道路","幹線道路"],[110,"コンサート"],[140,"ジェットエンジン","ジェット機"],[180,"ロケット打ち上げ","ロケット"],[194,"空気中の限界","限界"]];
@@ -484,7 +485,6 @@ button,input,select,#ttl{touch-action:manipulation}
   draw();
 })();
 </script>
-<script src="winbox0.2.82.bundle.min.js"></script>
 <script>
 (function(){
   var ITEMS=[
@@ -640,6 +640,50 @@ button,input,select,#ttl{touch-action:manipulation}
     if(taps.length>=3){taps=[];var nl=document.getElementById("netalabel"),nb=document.getElementById("neta");nl.hidden=false;if(!nb.checked){nb.checked=true;nb.dispatchEvent(new Event("change"));}openSecret();}
   });
 })();
+window.addEventListener('DOMContentLoaded', () => {
+    // モジュール化したブラウザ情報を取得
+    const browserData = getBrowserData();
+    const { name, os, ua, lower, keyword, isSafariMobile } = browserData;
+
+    // --- ログ表示 (複数ハイライト + バージョン黄色) ---
+    console.log(`%c[Device] ${os}`, 'color: #27ae60; font-weight: bold;');
+    let format = `%c[Browser: ${name}] `;
+    let styles = ['color: #73AFCE; font-weight: bold;'];
+
+    const osLower = os.toLowerCase();
+    let i = 0;
+    while (i < ua.length) {
+        const restLower = lower.slice(i);
+
+        // OSを緑でハイライト
+        if (os !== "Unknown OS" && restLower.startsWith(osLower)) {
+            format += `%c${ua.slice(i, i + osLower.length)}`;
+            styles.push('color: #27ae60; font-weight: bold;');
+            i += osLower.length;
+            continue;
+        }
+
+        if (keyword && restLower.startsWith(keyword)) {
+            format += `%c${ua.slice(i, i + keyword.length)}`;
+            styles.push('color: red; font-weight: bold;');
+            i += keyword.length;
+            continue;
+        }
+        const versionMatch = restLower.match(/^\/\d+(\.\d+)*/);
+        if (versionMatch) {
+            const ver = ua.slice(i, i + versionMatch[0].length);
+            format += `%c${ver}`;
+            styles.push('color: yellow; font-weight: bold;');
+            i += versionMatch[0].length;
+            continue;
+        }
+        format += `%c${ua[i]}`;
+        styles.push('color: #4e778b;');
+        i++;
+    }
+
+    console.log(format, ...styles);
+});
 </script>
 </body>
 </html>
