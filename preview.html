@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WinBox.js White Theme</title>
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/winbox@0.2.82/dist/css/winbox.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #fff;
+      color: #111;
+      font-family: "Segoe UI", Meiryo, sans-serif;
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .open-button {
+      margin: 5px;
+      padding: 11px 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #f7f7f7;
+      color: #111;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .2s, transform .2s, box-shadow .2s;
+    }
+
+    .open-button:hover {
+      background: #eee;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px #00000010;
+    }
+
+    .open-button:active {
+      transform: scale(.97);
+    }
+
+    /* ウィンドウ全体 */
+    .winbox {
+      background: #fff !important;
+      color: #111 !important;
+      border: 1px solid #e5e5e5 !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      box-shadow: 0 10px 35px #00000018 !important;
+    }
+
+    .winbox .wb-header {
+      background: var(--demo-tint, #fff) !important;
+      border-bottom: 1px solid #eee;
+    }
+
+    .winbox .wb-title {
+      color: var(--demo-color, #111) !important;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .winbox .wb-body {
+      background: #fff !important;
+      color: #111 !important;
+      overflow: hidden !important;
+    }
+
+    /* 最大化・全画面ボタンを非表示 */
+    .winbox .wb-max,
+    .winbox .wb-full {
+      display: none !important;
+    }
+
+    /* 標準アイコンを黒く表示 */
+    .winbox .wb-min:not(.restore-icon),
+    .winbox .wb-close {
+      filter: invert(1);
+    }
+
+    /* 復元アイコン */
+    .winbox .wb-min.restore-icon {
+      display: inline-block !important;
+      filter: none !important;
+      background-repeat: no-repeat !important;
+      background-position: center !important;
+      background-size: 16px 16px !important;
+    }
+
+    .winbox .wb-min.restore-icon::before,
+    .winbox .wb-min.restore-icon::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    .demo-intro {
+      margin: -10px 0 18px;
+      color: #57606a;
+      font-size: 14px;
+    }
+
+    .demo-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+      max-width: 640px;
+    }
+
+    .open-button {
+      margin: 0;
+      text-align: left;
+    }
+
+    .demo-content {
+      height: 100%;
+      overflow: auto;
+      padding: 22px;
+      background: #fff;
+      color: #24292f;
+    }
+
+    .demo-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .demo-icon {
+      display: grid;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .demo-content h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .demo-content p {
+      margin: 0 0 18px;
+      color: #57606a;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .demo-list {
+      display: grid;
+      gap: 10px;
+      margin: 0 0 18px;
+      padding: 14px;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      list-style: none;
+    }
+
+    .demo-list label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+    }
+
+    .demo-list input {
+      width: 18px;
+      height: 18px;
+      accent-color: #1a7f37;
+    }
+
+    .demo-details {
+      margin: 0 0 18px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f6f8fa;
+      font-size: 13px;
+    }
+
+    .demo-details summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .demo-details pre {
+      margin: 10px 0 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #57606a;
+      font-family: ui-monospace, monospace;
+    }
+
+    .demo-progress {
+      height: 10px;
+      margin: 8px 0 18px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #eaeef2;
+    }
+
+    .demo-progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    .demo-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .demo-action {
+      min-height: 38px;
+      padding: 8px 14px;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      background: #fff;
+      color: #24292f;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .demo-action.primary {
+      border-color: #1f883d;
+      background: #1f883d;
+      color: #fff;
+    }
+
+    .demo-action:hover {
+      filter: brightness(.96);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 14px;
+      }
+
+      .open-button {
+        padding: 10px 15px;
+        font-size: 13px;
+      }
+
+      .demo-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .demo-content {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h2>WinBox.js デモ</h2>
+  <p class="demo-intro">通知、確認、リスト、進捗などのウィンドウを開いて操作できます。複数同時に開くこともできます。</p>
+  <div class="demo-buttons" id="demo-buttons">
+    <button class="open-button" data-demo="success">✅ 成功通知</button>
+    <button class="open-button" data-demo="info">ℹ️ お知らせ</button>
+    <button class="open-button" data-demo="warning">⚠️ 警告</button>
+    <button class="open-button" data-demo="error">❌ エラー詳細</button>
+    <button class="open-button" data-demo="confirm">❔ 確認ダイアログ</button>
+    <button class="open-button" data-demo="list">☑️ チェックリスト</button>
+    <button class="open-button" data-demo="progress">⏳ 進捗表示</button>
+    <button class="open-button" data-demo="long">📝 説明付き通知</button>
+  </div>
+
+  <!-- 指定されたJavaScriptの読み込み先 -->
+  <script src="https://cdn.jsdelivr.net/npm/winbox@0.2.82/dist/winbox.bundle.min.js"></script>
+
+  <script>
+    const activeWindows = new Set();
+    const FADE_DURATION = 250;
+    const RESTORE_ICON =
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2Utd2lkdGg9IjIuNSIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNOCAzSDVhMiAyIDAgMCAwLTIgMnYzbTE4IDBWNWEyIDIgMCAwIDAtMi0yaC0zbTAgMThoM2EyIDIgMCAwIDAgMi0ydi0zTTMgMTZ2M2EyIDIgMCAwIDAgMiAyaDMiLz48L3N2Zz4=";
+
+    const DEMOS = {
+      success: {
+        title: "処理が完了しました",
+        windowTitle: "成功",
+        icon: "✓",
+        color: "#1a7f37",
+        tint: "#dafbe1",
+        message: "設定を保存しました。変更内容はすぐに反映されます。",
+        actions: [["閉じる", "close", false]]
+      },
+      info: {
+        title: "お知らせ",
+        windowTitle: "情報",
+        icon: "i",
+        color: "#0969da",
+        tint: "#ddf4ff",
+        message: "新しい機能をご利用いただけます。ウィンドウは最小化して後で確認できます。",
+        actions: [["わかりました", "close", true]]
+      },
+      warning: {
+        title: "内容をご確認ください",
+        windowTitle: "警告",
+        icon: "!",
+        color: "#9a6700",
+        tint: "#fff8c5",
+        message: "この操作を続けると、未保存の変更が失われる可能性があります。",
+        actions: [["キャンセル", "close", false], ["続行", "complete", true]]
+      },
+      error: {
+        title: "読み込みに失敗しました",
+        windowTitle: "エラー",
+        icon: "×",
+        color: "#cf222e",
+        tint: "#ffebe9",
+        message: "データを取得できませんでした。時間をおいてから、もう一度お試しください。",
+        details: "Error: Request failed\nStatus: 503 Service Unavailable\nRequest ID: demo-42",
+        actions: [["閉じる", "close", false], ["再試行（デモ）", "retry", true]]
+      },
+      confirm: {
+        title: "変更を適用しますか？",
+        windowTitle: "確認",
+        icon: "?",
+        color: "#8250df",
+        tint: "#fbefff",
+        message: "この設定をすべての画面に反映します。あとから変更することもできます。",
+        actions: [["キャンセル", "close", false], ["適用する", "complete", true]]
+      },
+      list: {
+        title: "作業チェックリスト",
+        windowTitle: "チェックリスト",
+        icon: "☷",
+        color: "#0969da",
+        tint: "#ddf4ff",
+        message: "項目をクリックしてチェックできます。",
+        items: ["設定を確認する", "変更を保存する", "画面を再読み込みする"],
+        actions: [["閉じる", "close", false]]
+      },
+      progress: {
+        title: "アップロード中",
+        windowTitle: "進捗",
+        icon: "↗",
+        color: "#8250df",
+        tint: "#fbefff",
+        message: "ファイルのアップロードをシミュレートします。",
+        progress: true,
+        actions: [["進める", "progress", true], ["閉じる", "close", false]]
+      },
+      long: {
+        title: "更新内容",
+        windowTitle: "詳細",
+        icon: "i",
+        color: "#0969da",
+        tint: "#ddf4ff",
+        message: "通知にはタイトルと複数行の説明を表示できます。内容に応じてウィンドウのサイズが変わり、スマートフォンでも読みやすいレイアウトになります。",
+        actions: [["閉じる", "close", true]]
+      }
+    };
+
+    function createContent(demo) {
+      const root = document.createElement("div");
+      root.className = "demo-content";
+
+      const heading = document.createElement("div");
+      heading.className = "demo-heading";
+      const icon = document.createElement("span");
+      icon.className = "demo-icon";
+      icon.textContent = demo.icon;
+      icon.style.color = demo.color;
+      icon.style.backgroundColor = demo.tint;
+
+      const title = document.createElement("h3");
+      title.textContent = demo.title;
+      heading.append(icon, title);
+      root.append(heading);
+
+      const message = document.createElement("p");
+      message.dataset.role = "message";
+      message.textContent = demo.message;
+      root.append(message);
+
+      if (demo.items) {
+        const list = document.createElement("ul");
+        list.className = "demo-list";
+        demo.items.forEach((item) => {
+          const li = document.createElement("li");
+          const label = document.createElement("label");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          const text = document.createElement("span");
+          text.textContent = item;
+          label.append(checkbox, text);
+          li.append(label);
+          list.append(li);
+        });
+        root.append(list);
+      }
+
+      if (demo.details) {
+        const details = document.createElement("details");
+        details.className = "demo-details";
+        const summary = document.createElement("summary");
+        summary.textContent = "エラーの詳細";
+        const pre = document.createElement("pre");
+        pre.textContent = demo.details;
+        details.append(summary, pre);
+        root.append(details);
+      }
+
+      if (demo.progress) {
+        const track = document.createElement("div");
+        track.className = "demo-progress";
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", "100");
+        track.setAttribute("aria-valuenow", "0");
+        const fill = document.createElement("span");
+        fill.style.backgroundColor = demo.color;
+        track.append(fill);
+        root.append(track);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "demo-actions";
+      demo.actions.forEach(([label, action, primary]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `demo-action${primary ? " primary" : ""}`;
+        button.dataset.action = action;
+        button.textContent = label;
+        actions.append(button);
+      });
+      root.append(actions);
+      return root;
+    }
+
+    function getMinButton(win) {
+      const windows = document.querySelectorAll(".winbox");
+      const element = win.dom || windows[windows.length - 1];
+      return element ? element.querySelector(".wb-min") : null;
+    }
+
+    function createWindow(type) {
+      if (typeof WinBox === "undefined") {
+        alert("WinBox.jsを読み込めませんでした。インターネット接続を確認してください。");
+        return;
+      }
+
+      const demo = DEMOS[type];
+      if (!demo) return;
+      const state = {win: null, isMinimized: false, iconTimer: null, token: 0, progress: 0};
+      const width = Math.min(380, window.innerWidth - 24);
+      const height = Math.min(type === "list" ? 360 : 320, window.innerHeight - 40);
+      const offset = activeWindows.size * 24;
+      const x = Math.min(
+        Math.max(12, window.innerWidth - width - 12 - offset % 96),
+        Math.max(12, window.innerWidth - width - 12)
+      );
+      const y = Math.min(
+        Math.max(12, window.innerHeight - height - 12 - offset % 96),
+        Math.max(12, window.innerHeight - height - 12)
+      );
+      const content = createContent(demo);
+
+      state.win = new WinBox({
+        title: demo.windowTitle,
+        width,
+        height,
+        x,
+        y,
+        background: demo.color,
+        border: 1,
+        noMax: true,
+        noFull: true,
+        html: content.outerHTML,
+        onminimize: () => {
+          state.isMinimized = true;
+          requestAnimationFrame(() => {
+            updateMinButton(state, true);
+          });
+        },
+        onrestore: () => {
+          state.isMinimized = false;
+          requestAnimationFrame(() => {
+            updateMinButton(state, true);
+          });
+        },
+        onclose: () => {
+          state.token++;
+          if (state.iconTimer !== null) {
+            clearTimeout(state.iconTimer);
+            state.iconTimer = null;
+          }
+          activeWindows.delete(state);
+        }
+      });
+      activeWindows.add(state);
+
+      const windows = document.querySelectorAll(".winbox");
+      const winElement = state.win.dom || windows[windows.length - 1];
+      if (winElement) {
+        winElement.style.setProperty("--demo-tint", demo.tint);
+        winElement.style.setProperty("--demo-color", demo.color);
+        winElement.querySelectorAll(".demo-action").forEach((button) => {
+          button.addEventListener("click", () => {
+            const action = button.dataset.action;
+            if (action === "close") {
+              state.win.close();
+            } else if (action === "complete") {
+              const message = winElement.querySelector('[data-role="message"]');
+              if (message) message.textContent = "完了しました。操作は正常に反映されました。";
+              winElement.querySelectorAll(".demo-action").forEach((item) => {
+                if (item.dataset.action !== "close") item.remove();
+              });
+            } else if (action === "retry") {
+              const message = winElement.querySelector('[data-role="message"]');
+              if (message) message.textContent = "再試行しました（デモのため通信は行いません）。";
+              button.remove();
+            } else if (action === "progress") {
+              state.progress = Math.min(100, state.progress + 25);
+              const track = winElement.querySelector('[role="progressbar"]');
+              const fill = track && track.querySelector("span");
+              if (fill) fill.style.width = `${state.progress}%`;
+              if (track) track.setAttribute("aria-valuenow", String(state.progress));
+              button.textContent = state.progress === 100 ? "完了" : `${state.progress}%`;
+              button.disabled = state.progress === 100;
+            }
+          });
+        });
+      }
+
+      requestAnimationFrame(() => {
+        const button = getMinButton(state.win);
+        if (!button) return;
+        button.style.setProperty("transition", "none", "important");
+        button.style.setProperty("opacity", "1", "important");
+        button.style.removeProperty("background-image");
+        button.style.removeProperty("background-size");
+        button.style.removeProperty("background-repeat");
+        button.style.removeProperty("background-position");
+        button.style.removeProperty("filter");
+        button.classList.remove("restore-icon");
+        button.title = "最小化";
+        button.setAttribute("aria-label", "最小化");
+        requestAnimationFrame(() => {
+          if (button.isConnected) button.style.removeProperty("transition");
+        });
+      });
+    }
+
+    function updateMinButton(state, fade) {
+      const button = getMinButton(state.win);
+      if (!button) return;
+      const token = ++state.token;
+      if (state.iconTimer !== null) {
+        clearTimeout(state.iconTimer);
+        state.iconTimer = null;
+      }
+
+      function applyIcon() {
+        if (token !== state.token || !button.isConnected) return;
+        if (state.isMinimized) {
+          button.style.setProperty(
+            "background-image",
+            `url("${RESTORE_ICON}")`,
+            "important"
+          );
+          button.style.setProperty("background-size", "16px 16px", "important");
+          button.style.setProperty("background-repeat", "no-repeat", "important");
+          button.style.setProperty("background-position", "center", "important");
+          button.style.setProperty("filter", "none", "important");
+          button.classList.add("restore-icon");
+          button.title = "元に戻す";
+          button.setAttribute("aria-label", "元に戻す");
+        } else {
+          button.style.removeProperty("background-image");
+          button.style.removeProperty("background-size");
+          button.style.removeProperty("background-repeat");
+          button.style.removeProperty("background-position");
+          button.style.removeProperty("filter");
+          button.classList.remove("restore-icon");
+          button.title = "最小化";
+          button.setAttribute("aria-label", "最小化");
+        }
+      }
+
+      if (!fade) {
+        button.style.setProperty("transition", "none", "important");
+        button.style.setProperty("opacity", "1", "important");
+        applyIcon();
+        requestAnimationFrame(() => {
+          if (token === state.token && button.isConnected) button.style.removeProperty("transition");
+        });
+        return;
+      }
+
+      button.style.setProperty(
+        "transition",
+        `opacity ${FADE_DURATION}ms ease-in-out`,
+        "important"
+      );
+      button.style.setProperty("opacity", "1", "important");
+      requestAnimationFrame(() => {
+        if (token !== state.token || !button.isConnected) return;
+        button.style.setProperty("opacity", "0", "important");
+        state.iconTimer = setTimeout(() => {
+          if (token !== state.token || !button.isConnected) return;
+          applyIcon();
+          button.getBoundingClientRect();
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (token !== state.token || !button.isConnected) return;
+              button.style.setProperty("opacity", "1", "important");
+              state.iconTimer = null;
+            });
+          });
+        }, FADE_DURATION);
+      });
+    }
+
+    document.getElementById("demo-buttons").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-demo]");
+      if (button) createWindow(button.dataset.demo);
+    });
+  </script>
+</body>
+</html>
