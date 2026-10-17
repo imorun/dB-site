@@ -170,7 +170,7 @@ button,input,select,#ttl{touch-action:manipulation}
       
     </div>
     <div id="wiz" hidden></div>
-    <p>測定中に押すと、グラフが3秒安定するのを待ってから補正値を決められます。質問に答える方法と、騒音計アプリなどの数値を入力する方法（より正確）を選べます。何度か繰り返すほど精度が上がり、結果はこの端末のブラウザに保存されます。スマホやPCのマイクは機種ごとに感度が違うため、表示値は目安です。正確に合わせたい場合は、騒音計アプリなどの値を見ながらスライダーで調整してください。</p>
+    <p>測定中に押すと、グラフが3秒安定するのを待ってから補正値を決められます。質問に答える方法と、騒音計アプリなどの数値を入力する方法（より正確）を選べます。何度か繰り返すほど精度が上がり、結果はこの端末のブラウザに保存されます。スマホでは音量の上がり方を控えめにし、短い音で表示が跳ねにくいようにしています。スマホやPCのマイクは機種ごとに感度が違うため、表示値は目安です。正確に合わせたい場合は、騒音計アプリなどの値を見ながらスライダーで調整してください。</p>
   </div>
 </main>
 
@@ -179,6 +179,8 @@ button,input,select,#ttl{touch-action:manipulation}
   var REF=[[30,"ささやき声"],[60,"普通の会話"],[85,"交通量の多い道路","幹線道路"],[110,"コンサート"],[140,"ジェットエンジン","ジェット機"],[180,"ロケット打ち上げ","ロケット"],[194,"空気中の限界","限界"]];
   var MAXDB=200;
   var $=function(id){return document.getElementById(id)};
+  var isMobile=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var DEFAULT_K=isMobile?0.8:1, DEFAULT_OFFSET=isMobile?84:90, DEFAULT_TAU=isMobile?0.5:0.125;
   var ticks=$("ticks");
   function renderTicks(){
     ticks.innerHTML="";
@@ -193,8 +195,8 @@ button,input,select,#ttl{touch-action:manipulation}
   renderTicks();
 
   var ctx=null,analyser=null,stream=null,buf=null,raf=0,running=false;
-  var cal=null, lastRaw=-60, lastT=0, pS=null, pts=[], TAU=0.125, K=1;
-  var offset=90, hist=[], sum=0, n=0, mx=null, mn=null, smooth=null, lastPush=0;
+  var cal=null, lastRaw=-60, lastT=0, pS=null, pts=[], TAU=DEFAULT_TAU, K=DEFAULT_K;
+  var offset=DEFAULT_OFFSET, hist=[], sum=0, n=0, mx=null, mn=null, smooth=null, lastPush=0;
 
   $("offset").addEventListener("input",function(e){
     setOffset(+e.target.value,false);
@@ -268,7 +270,7 @@ button,input,select,#ttl{touch-action:manipulation}
     gn.gain.value=1.2589;
     src.connect(f1);f1.connect(f2);f2.connect(f3);f3.connect(gn);gn.connect(analyser);
     buf=new Float32Array(analyser.fftSize);
-    running=true; lastT=0; pS=null; $("start").textContent="停止";
+    running=true; lastT=0; pS=isMobile?1e-16:null; $("start").textContent="停止";
     loop();
   }
 
@@ -335,7 +337,7 @@ button,input,select,#ttl{touch-action:manipulation}
 
   $("start").addEventListener("click",function(){running?stop():start()});
   load(); $("offset").value=offset; $("offv").textContent=(offset>=0?"+":"")+offset.toFixed(1); showStat();
-  $("calclear").addEventListener("click",function(){pts=[]; TAU=0.125; K=1; setOffset(90,true);});
+  $("calclear").addEventListener("click",function(){pts=[]; TAU=DEFAULT_TAU; K=DEFAULT_K; setOffset(DEFAULT_OFFSET,true);});
   $("neta").addEventListener("change",function(){REF[3]=$("neta").checked?[114.514,"野獣先輩"]:[110,"コンサート"]; renderTicks();});
   $("reset").addEventListener("click",reset);
   
@@ -353,10 +355,10 @@ button,input,select,#ttl{touch-action:manipulation}
   }
   function softCap(y){return y<105?y:105+15*Math.tanh((y-105)/15);}
   function fit(a){
-    if(!a.length) return {k:1,b:90};
+    if(!a.length) return {k:K,b:offset};
     var sw=0,sx=0,sy=0,lo=1e9,hi=-1e9;
     a.forEach(function(p){sw+=p.w;sx+=p.w*p.x;sy+=p.w*p.y;lo=Math.min(lo,p.x);hi=Math.max(hi,p.x);});
-    var mx=sx/sw,my=sy/sw,k=1;
+    var mx=sx/sw,my=sy/sw,k=K;
     if(hi-lo>=15){
       var sxx=0,sxy=0;
       a.forEach(function(p){sxx+=p.w*(p.x-mx)*(p.x-mx);sxy+=p.w*(p.x-mx)*(p.y-my);});
@@ -368,19 +370,19 @@ button,input,select,#ttl{touch-action:manipulation}
   function load(){
     try{
       var j=JSON.parse(localStorage.getItem("dbmeter.cal.v1")||"null");
-      if(j&&typeof j.offset==="number"){offset=Math.max(40,Math.min(160,j.offset)); pts=(Array.isArray(j.pts)?j.pts:[]).filter(function(p){return typeof p.x==="number";}); if(j.tau===1||j.tau===0.125) TAU=j.tau; if(typeof j.k==="number"&&j.k>=0.6&&j.k<=1) K=j.k;}
+      if(j&&typeof j.offset==="number"){offset=Math.max(40,Math.min(160,j.offset)); pts=(Array.isArray(j.pts)?j.pts:[]).filter(function(p){return typeof p.x==="number";}); if(j.tau===1||j.tau===0.5||j.tau===0.125) TAU=j.tau; if(typeof j.k==="number"&&j.k>=0.6&&j.k<=1) K=j.k;}
     }catch(e){}
   }
   function showStat(){
     var t=(offset>=0?"+":"")+offset.toFixed(1), el=$("calstat");
     if(pts.length) el.textContent="補正値 "+t+"（校正 "+pts.length+" 点"+(K<0.995?"・感度×"+K.toFixed(2):"")+"・この端末に保存済み。音量の違う点を増やすほど正確になります）";
-    else if(offset!==90) el.textContent="補正値 "+t+"（手動設定・この端末に保存済み）";
+    else if(offset!==DEFAULT_OFFSET||K!==DEFAULT_K||TAU!==DEFAULT_TAU) el.textContent="補正値 "+t+"（手動設定・この端末に保存済み）";
     else el.textContent="補正値は初期値です。自動補正で合わせてください。";
   }
   function setOffset(v,fromCal){
     offset=Math.max(40,Math.min(160,v));
     $("offset").value=offset; $("offv").textContent=(offset>=0?"+":"")+offset.toFixed(1);
-    if(!fromCal){pts=[];K=1;}
+    if(!fromCal){pts=[];K=DEFAULT_K;}
     save(); showStat();
   }
   var TREE={
@@ -420,7 +422,7 @@ button,input,select,#ttl{touch-action:manipulation}
     var bar=$("wprog"); if(bar) bar.style.width=(p*100)+"%";
     if(p>=1){
       var s=0,c=0,m1=0,m2=0; for(var j=k+1;j<calBuf.length;j++){var rr=calBuf[j].r; s+=Math.pow(10,rr/10); m1+=rr; m2+=rr*rr; c++;}
-      wst.avg=10*Math.log10(s/c); wst.tau=Math.sqrt(Math.max(0,m2/c-(m1/c)*(m1/c)))>2.5?1:0.125; wst.phase="method"; renderWiz();
+      wst.avg=10*Math.log10(s/c); wst.tau=Math.sqrt(Math.max(0,m2/c-(m1/c)*(m1/c)))>2.5?1:(isMobile?0.5:0.125); wst.phase="method"; renderWiz();
     }
   }
   function renderWiz(){
@@ -460,9 +462,9 @@ button,input,select,#ttl{touch-action:manipulation}
       var cx=document.createElement("button"); cx.type="button"; cx.className="wbtn sub"; cx.textContent="やめる"; cx.onclick=endWiz;
       box.appendChild(cx);
     }else{
-      var wgt=(wst.kind==="ref"?3:1)*(wst.db<40?0.35:1); wst.w=wgt; var off=wst.db-wst.avg; var all=pts.concat([{x:wst.avg,y:wst.db,w:wgt}]); var fr=fit(all); var mix=fr.b;
+      var wgt=(wst.kind==="ref"?3:1)*(wst.db<40?0.35:1); wst.w=wgt; var off=wst.db-K*wst.avg; var all=pts.concat([{x:wst.avg,y:wst.db,w:wgt}]); var fr=fit(all); var mix=fr.b;
       wst.off=off; wst.mix=mix;
-      el.innerHTML='<div class="wsub">答えから、いまの音は</div><div class="wnum">約 '+wst.db+' dB</div><div class="wsub">この点の補正値は +'+off.toFixed(1)+'。登録済みの '+all.length+' 点を合成すると +'+mix.toFixed(1)+(fr.k<0.995?'（感度 ×'+fr.k.toFixed(2)+'）':'')+' になります。時間重みは '+(wst.tau===1?'S（音の揺れが大きいため遅め）':'F（速め）')+' にします。</div><div class="wsub"'+(wst.db<40?'>静かな音だけでの補正は大きい音の誤差が出やすいので、テレビや音楽を流してもう1点追加すると、指パッチンなどの大きい音が高すぎなくなります。':' hidden>')+'</div><div class="wopts"><button type="button" class="wbtn" id="wok">この点を追加して使う</button><button type="button" class="wbtn sub" id="wretry">やり直す</button></div>';
+      el.innerHTML='<div class="wsub">答えから、いまの音は</div><div class="wnum">約 '+wst.db+' dB</div><div class="wsub">この点の補正値は +'+off.toFixed(1)+'。登録済みの '+all.length+' 点を合成すると +'+mix.toFixed(1)+(fr.k<0.995?'（感度 ×'+fr.k.toFixed(2)+'）':'')+' になります。時間重みは '+(wst.tau===1?'S（遅め）':wst.tau===0.5?'M（中間）':'F（速め）')+' にします。</div><div class="wsub"'+(wst.db<40?'>静かな音だけでの補正は大きい音の誤差が出やすいので、テレビや音楽を流してもう1点追加すると、指パッチンなどの大きい音が高すぎなくなります。':' hidden>')+'</div><div class="wopts"><button type="button" class="wbtn" id="wok">この点を追加して使う</button><button type="button" class="wbtn sub" id="wretry">やり直す</button></div>';
       $("wok").onclick=function(){
         TAU=wst.tau; pts.push({x:wst.avg,y:wst.db,w:wst.w}); if(pts.length>8) pts.shift(); var ft=fit(pts); K=ft.k; setOffset(ft.b,true);
         smooth=null; reset(); endWiz();
