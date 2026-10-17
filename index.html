@@ -170,7 +170,7 @@ button,input,select,#ttl{touch-action:manipulation}
       
     </div>
     <div id="wiz" hidden></div>
-    <p>測定中に押すと、グラフが3秒安定するのを待ってから補正値を決められます。質問に答える方法と、騒音計アプリなどの数値を入力する方法（より正確）を選べます。何度か繰り返すほど精度が上がり、結果はこの端末のブラウザに保存されます。スマホでは音量の上がり方を控えめにし、短い音で表示が跳ねにくいようにしています。スマホやPCのマイクは機種ごとに感度が違うため、表示値は目安です。正確に合わせたい場合は、騒音計アプリなどの値を見ながらスライダーで調整してください。</p>
+    <p>測定中に押すと、グラフが3秒安定するのを待ってから補正値を決められます。質問に答える方法と、騒音計アプリなどの数値を入力する方法（より正確）を選べます。何度か繰り返すほど精度が上がり、結果はこの端末のブラウザに保存されます。スマホでは音量の上がり方を控えめにして短い音で表示が跳ねにくくし、音が小さくなった時は早く表示に反映するようにしています。スマホやPCのマイクは機種ごとに感度が違うため、表示値は目安です。正確に合わせたい場合は、騒音計アプリなどの値を見ながらスライダーで調整してください。</p>
   </div>
 </main>
 
@@ -288,7 +288,7 @@ button,input,select,#ttl{touch-action:manipulation}
     var rms=Math.sqrt(s/buf.length);
     var raw=20*Math.log10(Math.max(rms,1e-8)); lastRaw=raw; calFeed(raw);
     var now=performance.now(), dt=lastT?(now-lastT)/1000:0.016; lastT=now;
-    var tau=TAU;
+    var tau=isMobile&&pS!==null&&rms*rms<pS?Math.min(TAU,0.2):TAU;
     pS=pS===null?rms*rms:pS+(rms*rms-pS)*(1-Math.exp(-dt/tau));
     var db=K*10*Math.log10(Math.max(pS,1e-16))+offset;
     if(!$("neta").checked) db=softCap(db);
