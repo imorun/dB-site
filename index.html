@@ -193,7 +193,7 @@ button,input,select,#ttl{touch-action:manipulation}
   renderTicks();
 
   var ctx=null,analyser=null,stream=null,buf=null,raf=0,running=false;
-  var cal=null, lastRaw=-60, lastT=0, pS=null, pts=[], TAU=0.125;
+  var cal=null, lastRaw=-60, lastT=0, pS=null, pts=[], TAU=0.125, K=1;
   var offset=90, hist=[], sum=0, n=0, mx=null, mn=null, smooth=null, lastPush=0;
 
   $("offset").addEventListener("input",function(e){
@@ -288,7 +288,8 @@ button,input,select,#ttl{touch-action:manipulation}
     var now=performance.now(), dt=lastT?(now-lastT)/1000:0.016; lastT=now;
     var tau=TAU;
     pS=pS===null?rms*rms:pS+(rms*rms-pS)*(1-Math.exp(-dt/tau));
-    var db=10*Math.log10(Math.max(pS,1e-16))+offset;
+    var db=K*10*Math.log10(Math.max(pS,1e-16))+offset;
+    if(!$("neta").checked) db=softCap(db);
     db=Math.max(0,Math.min(MAXDB,db));
     smooth=db;
     update(smooth);
@@ -334,7 +335,7 @@ button,input,select,#ttl{touch-action:manipulation}
 
   $("start").addEventListener("click",function(){running?stop():start()});
   load(); $("offset").value=offset; $("offv").textContent=(offset>=0?"+":"")+offset.toFixed(1); showStat();
-  $("calclear").addEventListener("click",function(){pts=[]; TAU=0.125; setOffset(90,true);});
+  $("calclear").addEventListener("click",function(){pts=[]; TAU=0.125; K=1; setOffset(90,true);});
   $("neta").addEventListener("change",function(){REF[3]=$("neta").checked?[114.514,"野獣先輩"]:[110,"コンサート"]; renderTicks();});
   $("reset").addEventListener("click",reset);
   
@@ -350,23 +351,36 @@ button,input,select,#ttl{touch-action:manipulation}
     var sw=0,so=0; b.forEach(function(p){sw+=p.w;so+=p.w*p.off;});
     return so/sw;
   }
-  function save(){try{localStorage.setItem("dbmeter.cal.v1",JSON.stringify({offset:offset,pts:pts,tau:TAU}));}catch(e){}}
+  function softCap(y){return y<105?y:105+15*Math.tanh((y-105)/15);}
+  function fit(a){
+    if(!a.length) return {k:1,b:90};
+    var sw=0,sx=0,sy=0,lo=1e9,hi=-1e9;
+    a.forEach(function(p){sw+=p.w;sx+=p.w*p.x;sy+=p.w*p.y;lo=Math.min(lo,p.x);hi=Math.max(hi,p.x);});
+    var mx=sx/sw,my=sy/sw,k=1;
+    if(hi-lo>=15){
+      var sxx=0,sxy=0;
+      a.forEach(function(p){sxx+=p.w*(p.x-mx)*(p.x-mx);sxy+=p.w*(p.x-mx)*(p.y-my);});
+      if(sxx>0) k=Math.max(0.6,Math.min(1,sxy/sxx));
+    }
+    return {k:k,b:my-k*mx};
+  }
+  function save(){try{localStorage.setItem("dbmeter.cal.v1",JSON.stringify({offset:offset,pts:pts,tau:TAU,k:K}));}catch(e){}}
   function load(){
     try{
       var j=JSON.parse(localStorage.getItem("dbmeter.cal.v1")||"null");
-      if(j&&typeof j.offset==="number"){offset=Math.max(40,Math.min(160,j.offset)); pts=Array.isArray(j.pts)?j.pts:[]; if(j.tau===1||j.tau===0.125) TAU=j.tau;}
+      if(j&&typeof j.offset==="number"){offset=Math.max(40,Math.min(160,j.offset)); pts=(Array.isArray(j.pts)?j.pts:[]).filter(function(p){return typeof p.x==="number";}); if(j.tau===1||j.tau===0.125) TAU=j.tau; if(typeof j.k==="number"&&j.k>=0.6&&j.k<=1) K=j.k;}
     }catch(e){}
   }
   function showStat(){
     var t=(offset>=0?"+":"")+offset.toFixed(1), el=$("calstat");
-    if(pts.length) el.textContent="補正値 "+t+"（校正 "+pts.length+" 点・この端末に保存済み。点を増やすほど正確になります）";
+    if(pts.length) el.textContent="補正値 "+t+"（校正 "+pts.length+" 点"+(K<0.995?"・感度×"+K.toFixed(2):"")+"・この端末に保存済み。音量の違う点を増やすほど正確になります）";
     else if(offset!==90) el.textContent="補正値 "+t+"（手動設定・この端末に保存済み）";
     else el.textContent="補正値は初期値です。自動補正で合わせてください。";
   }
   function setOffset(v,fromCal){
     offset=Math.max(40,Math.min(160,v));
     $("offset").value=offset; $("offv").textContent=(offset>=0?"+":"")+offset.toFixed(1);
-    if(!fromCal) pts=[];
+    if(!fromCal){pts=[];K=1;}
     save(); showStat();
   }
   var TREE={
@@ -417,7 +431,7 @@ button,input,select,#ttl{touch-action:manipulation}
       el.innerHTML='<div class="wq">グラフが安定するのを待っています</div><div class="wbar"><i id="wprog"></i></div><div class="wsub">周囲の音をほぼ一定にして、3秒間そのままにしてください。</div><button type="button" class="wbtn sub" id="wcancel">やめる</button>';
       $("wcancel").onclick=endWiz;
     }else if(wst.phase==="method"){
-      el.innerHTML='<div class="wsub">グラフが3秒安定しました。</div><div class="wq">どちらで合わせますか？</div><div class="wopts"><button type="button" class="wbtn" id="mq">質問に答える（誤差 ±5dB 目安）</button><button type="button" class="wbtn" id="mn">騒音計アプリなどの数値を入力（誤差 ±2dB 目安）</button><button type="button" class="wbtn sub" id="mx">やめる</button></div>';
+      el.innerHTML='<div class="wsub">グラフが3秒安定しました。</div>'+(wst.avg<-70?'<div class="wsub">周囲が静かすぎて、マイク自体のノイズの影響が大きい状態です。テレビや音楽を流すか、声を出して、もう少し大きい音で合わせ直すと精度が上がります。</div>':'')+'<div class="wq">どちらで合わせますか？</div><div class="wopts"><button type="button" class="wbtn" id="mq">質問に答える（誤差 ±5dB 目安）</button><button type="button" class="wbtn" id="mn">騒音計アプリなどの数値を入力（誤差 ±2dB 目安）</button><button type="button" class="wbtn sub" id="mx">やめる</button></div>';
       $("mq").onclick=function(){wst.phase="ask"; renderWiz();};
       $("mn").onclick=function(){wst.phase="num"; renderWiz();};
       $("mx").onclick=endWiz;
@@ -446,11 +460,11 @@ button,input,select,#ttl{touch-action:manipulation}
       var cx=document.createElement("button"); cx.type="button"; cx.className="wbtn sub"; cx.textContent="やめる"; cx.onclick=endWiz;
       box.appendChild(cx);
     }else{
-      var off=Math.max(40,Math.min(160,wst.db-wst.avg)); var all=pts.concat([{off:off,w:wst.kind==="ref"?3:1}]); var mix=combine(all);
+      var wgt=(wst.kind==="ref"?3:1)*(wst.db<40?0.35:1); wst.w=wgt; var off=wst.db-wst.avg; var all=pts.concat([{x:wst.avg,y:wst.db,w:wgt}]); var fr=fit(all); var mix=fr.b;
       wst.off=off; wst.mix=mix;
-      el.innerHTML='<div class="wsub">答えから、いまの音は</div><div class="wnum">約 '+wst.db+' dB</div><div class="wsub">この点の補正値は +'+off.toFixed(1)+'。登録済みの '+all.length+' 点を合成すると +'+mix.toFixed(1)+' になります。時間重みは '+(wst.tau===1?'S（音の揺れが大きいため遅め）':'F（速め）')+' にします。</div><div class="wopts"><button type="button" class="wbtn" id="wok">この点を追加して使う</button><button type="button" class="wbtn sub" id="wretry">やり直す</button></div>';
+      el.innerHTML='<div class="wsub">答えから、いまの音は</div><div class="wnum">約 '+wst.db+' dB</div><div class="wsub">この点の補正値は +'+off.toFixed(1)+'。登録済みの '+all.length+' 点を合成すると +'+mix.toFixed(1)+(fr.k<0.995?'（感度 ×'+fr.k.toFixed(2)+'）':'')+' になります。時間重みは '+(wst.tau===1?'S（音の揺れが大きいため遅め）':'F（速め）')+' にします。</div><div class="wsub"'+(wst.db<40?'>静かな音だけでの補正は大きい音の誤差が出やすいので、テレビや音楽を流してもう1点追加すると、指パッチンなどの大きい音が高すぎなくなります。':' hidden>')+'</div><div class="wopts"><button type="button" class="wbtn" id="wok">この点を追加して使う</button><button type="button" class="wbtn sub" id="wretry">やり直す</button></div>';
       $("wok").onclick=function(){
-        TAU=wst.tau; pts.push({off:wst.off,w:wst.kind==="ref"?3:1}); if(pts.length>8) pts.shift(); setOffset(combine(pts),true);
+        TAU=wst.tau; pts.push({x:wst.avg,y:wst.db,w:wst.w}); if(pts.length>8) pts.shift(); var ft=fit(pts); K=ft.k; setOffset(ft.b,true);
         smooth=null; reset(); endWiz();
       };
       $("wretry").onclick=function(){endWiz(); startWizard();};
