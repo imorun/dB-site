@@ -174,12 +174,20 @@ button,input,select,#ttl{touch-action:manipulation}
   </div>
 </main>
 
+<script src="morun.clocksite.js.utils.min.js"></script>
 <script>
 (function(){
   var REF=[[30,"ささやき声"],[60,"普通の会話"],[85,"交通量の多い道路","幹線道路"],[110,"コンサート"],[140,"ジェットエンジン","ジェット機"],[180,"ロケット打ち上げ","ロケット"],[194,"空気中の限界","限界"]];
   var MAXDB=200;
   var $=function(id){return document.getElementById(id)};
-  var isMobile=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var isMobile;
+  if(typeof getBrowserData==="function"){
+    var deviceInfo=getBrowserData();
+    isMobile=deviceInfo.os==="Android"||deviceInfo.os==="iPhone"||deviceInfo.os==="iPad"||deviceInfo.isSafariMobile||/ipod/i.test(deviceInfo.lower)||(deviceInfo.os==="Mac"&&navigator.maxTouchPoints>1);
+  }else{
+    console.error("clock-site utils.js could not be loaded; using built-in mobile detection.");
+    isMobile=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  }
   var DEFAULT_K=isMobile?0.8:1, DEFAULT_OFFSET=isMobile?84:90, DEFAULT_TAU=isMobile?0.5:0.125;
   var ticks=$("ticks");
   function renderTicks(){
