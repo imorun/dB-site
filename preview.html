@@ -6,7 +6,7 @@
   <title>WinBox.js White Theme</title>
 
   <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/winbox@0.2.82/dist/css/winbox.min.css">
+        href="winbox0.2.82.min.css">
 
   <style>
     * {
@@ -286,7 +286,7 @@
   </div>
 
   <!-- 指定されたJavaScriptの読み込み先 -->
-  <script src="https://cdn.jsdelivr.net/npm/winbox@0.2.82/dist/winbox.bundle.min.js"></script>
+  <script src="winbox0.2.82.bundle.min.js"></script>
 
   <script>
     const activeWindows = new Set();
@@ -466,23 +466,14 @@
       const state = {win: null, isMinimized: false, iconTimer: null, token: 0, progress: 0};
       const width = Math.min(380, window.innerWidth - 24);
       const height = Math.min(type === "list" ? 360 : 320, window.innerHeight - 40);
-      const offset = activeWindows.size * 24;
-      const x = Math.min(
-        Math.max(12, window.innerWidth - width - 12 - offset % 96),
-        Math.max(12, window.innerWidth - width - 12)
-      );
-      const y = Math.min(
-        Math.max(12, window.innerHeight - height - 12 - offset % 96),
-        Math.max(12, window.innerHeight - height - 12)
-      );
       const content = createContent(demo);
 
       state.win = new WinBox({
         title: demo.windowTitle,
         width,
         height,
-        x,
-        y,
+        x: "center",
+        y: "center",
         background: demo.color,
         border: 1,
         noMax: true,
