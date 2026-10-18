@@ -3,92 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WinBox.js White Theme</title>
+  <title>ウィンドウ UI デモ</title>
 
   <link rel="stylesheet"
         href="winbox0.2.82.min.css">
 
   <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      --ink: #19243a;
+      --muted: #65718a;
+      --line: #e5e9f2;
+      --surface: #fff;
+      --accent: #6258e8;
+      --accent-dark: #5046cf;
+    }
+
     * {
       box-sizing: border-box;
     }
 
-    body {
-      margin: 0;
-      padding: 24px;
-      background: #fff;
-      color: #111;
-      font-family: "Segoe UI", Meiryo, sans-serif;
+    body,
+    button {
+      font-family: inherit;
     }
 
-    h2 {
-      margin: 0 0 20px;
-      font-size: 22px;
-      font-weight: 600;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: clamp(20px, 5vw, 64px) 20px;
+      background:
+        radial-gradient(ellipse at 12% 0%, #e8eaff 0, transparent 38%),
+        radial-gradient(ellipse at 100% 28%, #e4f6f4 0, transparent 32%),
+        #f6f7fb;
+      color: var(--ink);
+    }
+
+    .page-shell {
+      width: min(100%, 920px);
+      margin: 0 auto;
+    }
+
+    .hero {
+      margin-bottom: 36px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #39b998;
+      box-shadow: 0 0 0 4px #39b99825;
+      content: "";
+    }
+
+    h1 {
+      max-width: 680px;
+      margin: 0;
+      font-size: clamp(32px, 6vw, 54px);
+      font-weight: 800;
+      letter-spacing: -.055em;
+      line-height: 1.12;
+    }
+
+    .demo-intro {
+      max-width: 650px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .hero-note {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .hero-note span {
+      padding: 7px 12px;
+      border: 1px solid #e2e5f0;
+      border-radius: 999px;
+      background: #ffffffb8;
+      color: #505c75;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .demo-section {
+      padding: clamp(18px, 4vw, 30px);
+      border: 1px solid #e8eaf1;
+      border-radius: 24px;
+      background: #ffffffc9;
+      box-shadow: 0 20px 60px #26345b12;
+      backdrop-filter: blur(14px);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .section-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-count {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f0efff;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
     }
 
     .open-button {
-      margin: 5px;
-      padding: 11px 20px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      background: #f7f7f7;
-      color: #111;
-      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      width: 100%;
+      min-height: 104px;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--ink);
+      text-align: left;
       cursor: pointer;
-      transition: background .2s, transform .2s, box-shadow .2s;
+      box-shadow: 0 2px 5px #26345b08;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
 
     .open-button:hover {
-      background: #eee;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px #00000010;
+      transform: translateY(-3px);
+      border-color: #c8c4ff;
+      box-shadow: 0 12px 26px #4540a51a;
     }
 
     .open-button:active {
-      transform: scale(.97);
+      transform: translateY(-1px);
     }
 
-    /* ウィンドウ全体 */
+    .open-button:focus-visible,
+    .demo-action:focus-visible {
+      outline: 3px solid #8d86ff;
+      outline-offset: 3px;
+    }
+
+    .button-icon {
+      display: grid;
+      flex: 0 0 40px;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 13px;
+      background: #f1f0ff;
+      font-size: 19px;
+    }
+
+    .button-copy {
+      display: grid;
+      gap: 5px;
+    }
+
+    .button-copy strong {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .button-copy small {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
+    .demo-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
     .winbox {
-      background: #fff !important;
-      color: #111 !important;
-      border: 1px solid #e5e5e5 !important;
-      border-radius: 16px !important;
+      background: var(--surface) !important;
+      color: var(--ink) !important;
+      border: 1px solid #e6e8f0 !important;
+      border-radius: 18px !important;
       overflow: hidden !important;
-      box-shadow: 0 10px 35px #00000018 !important;
+      box-shadow: 0 24px 70px #18234230 !important;
     }
 
     .winbox .wb-header {
       background: var(--demo-tint, #fff) !important;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #17243a10;
     }
 
     .winbox .wb-title {
-      color: var(--demo-color, #111) !important;
+      color: var(--demo-color, var(--ink)) !important;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .winbox .wb-body {
-      background: #fff !important;
-      color: #111 !important;
+      background: var(--surface) !important;
+      color: var(--ink) !important;
       overflow: hidden !important;
     }
 
-    /* 最大化・全画面ボタンを非表示 */
     .winbox .wb-max,
     .winbox .wb-full {
       display: none !important;
     }
 
-    /* 標準アイコンを黒く表示 */
     .winbox .wb-min:not(.restore-icon),
     .winbox .wb-close {
       filter: invert(1);
     }
 
-    /* 復元アイコン */
     .winbox .wb-min.restore-icon {
       display: inline-block !important;
       filter: none !important;
@@ -103,37 +264,19 @@
       content: none !important;
     }
 
-    .demo-intro {
-      margin: -10px 0 18px;
-      color: #57606a;
-      font-size: 14px;
-    }
-
-    .demo-buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-      gap: 10px;
-      max-width: 640px;
-    }
-
-    .open-button {
-      margin: 0;
-      text-align: left;
-    }
-
     .demo-content {
       height: 100%;
       overflow: auto;
-      padding: 22px;
-      background: #fff;
-      color: #24292f;
+      padding: 24px;
+      background: var(--surface);
+      color: var(--ink);
     }
 
     .demo-heading {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .demo-icon {
@@ -142,30 +285,32 @@
       width: 42px;
       height: 42px;
       place-items: center;
-      border-radius: 50%;
+      border-radius: 14px;
       font-size: 22px;
       font-weight: 700;
     }
 
     .demo-content h3 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
+      letter-spacing: -.02em;
     }
 
     .demo-content p {
-      margin: 0 0 18px;
-      color: #57606a;
+      margin: 0 0 20px;
+      color: var(--muted);
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.75;
     }
 
     .demo-list {
       display: grid;
       gap: 10px;
       margin: 0 0 18px;
-      padding: 14px;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fafbfe;
       list-style: none;
     }
 
@@ -179,14 +324,15 @@
     .demo-list input {
       width: 18px;
       height: 18px;
-      accent-color: #1a7f37;
+      accent-color: var(--accent);
     }
 
     .demo-details {
       margin: 0 0 18px;
-      padding: 12px;
-      border-radius: 8px;
-      background: #f6f8fa;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8f9fc;
       font-size: 13px;
     }
 
@@ -199,16 +345,16 @@
       margin: 10px 0 0;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      color: #57606a;
+      color: var(--muted);
       font-family: ui-monospace, monospace;
     }
 
     .demo-progress {
-      height: 10px;
-      margin: 8px 0 18px;
+      height: 9px;
+      margin: 8px 0 20px;
       overflow: hidden;
       border-radius: 99px;
-      background: #eaeef2;
+      background: #eceef5;
     }
 
     .demo-progress span {
@@ -216,7 +362,7 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      transition: width .25s ease;
+      transition: width .35s cubic-bezier(.2, .8, .2, 1);
     }
 
     .demo-actions {
@@ -228,62 +374,137 @@
 
     .demo-action {
       min-height: 38px;
-      padding: 8px 14px;
-      border: 1px solid #d0d7de;
-      border-radius: 8px;
-      background: #fff;
-      color: #24292f;
+      padding: 9px 15px;
+      border: 1px solid #dfe3ed;
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
       font: inherit;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, transform .18s ease;
     }
 
     .demo-action.primary {
-      border-color: #1f883d;
-      background: #1f883d;
+      border-color: var(--accent);
+      background: var(--accent);
       color: #fff;
     }
 
     .demo-action:hover {
-      filter: brightness(.96);
+      transform: translateY(-1px);
+      border-color: #bcb7ff;
+      background-color: #f7f6ff;
     }
 
-    @media (max-width: 480px) {
+    .demo-action.primary:hover {
+      border-color: var(--accent-dark);
+      background: var(--accent-dark);
+    }
+
+    .demo-action:disabled {
+      cursor: default;
+      opacity: .65;
+      transform: none;
+    }
+
+    @media (max-width: 600px) {
       body {
-        padding: 14px;
+        padding: 28px 14px;
       }
 
-      .open-button {
-        padding: 10px 15px;
-        font-size: 13px;
+      .hero {
+        margin-bottom: 26px;
       }
 
       .demo-buttons {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .open-button {
+        min-height: 86px;
+        padding: 14px;
+      }
+
+      .section-heading {
+        align-items: flex-start;
       }
 
       .demo-content {
-        padding: 16px;
+        padding: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <h2>WinBox.js デモ</h2>
-  <p class="demo-intro">通知、確認、リスト、進捗などのウィンドウを開いて操作できます。複数同時に開くこともできます。</p>
-  <div class="demo-buttons" id="demo-buttons">
-    <button class="open-button" data-demo="success">✅ 成功通知</button>
-    <button class="open-button" data-demo="info">ℹ️ お知らせ</button>
-    <button class="open-button" data-demo="warning">⚠️ 警告</button>
-    <button class="open-button" data-demo="error">❌ エラー詳細</button>
-    <button class="open-button" data-demo="confirm">❔ 確認ダイアログ</button>
-    <button class="open-button" data-demo="list">☑️ チェックリスト</button>
-    <button class="open-button" data-demo="progress">⏳ 進捗表示</button>
-    <button class="open-button" data-demo="long">📝 説明付き通知</button>
-  </div>
+  <main class="page-shell">
+    <header class="hero">
+      <p class="eyebrow">Interactive UI showcase</p>
+      <h1>ウィンドウの使い心地を、<br>ここで試そう。</h1>
+      <p class="demo-intro">通知、確認ダイアログ、チェックリストなど、8種類のウィンドウ UI を体験できるデモです。カードを選ぶと画面中央にウィンドウが開き、最小化やボタン操作も試せます。</p>
+      <div class="hero-note" aria-label="デモの特徴">
+        <span>8 種類の UI</span>
+        <span>複数ウィンドウに対応</span>
+        <span>操作はデモ内で完結</span>
+      </div>
+    </header>
+
+    <section class="demo-section" aria-labelledby="demo-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="demo-heading">デモを選ぶ</h2>
+          <p>カードをクリックして、それぞれの動作を確認できます。</p>
+        </div>
+        <span class="section-count">01 — 08</span>
+      </div>
+      <div class="demo-buttons" id="demo-buttons">
+        <button class="open-button" data-demo="success">
+          <span class="button-icon" aria-hidden="true">✅</span>
+          <span class="button-copy"><strong>成功通知</strong><small>保存完了など、処理が成功したことを伝えます。</small></span>
+        </button>
+        <button class="open-button" data-demo="info">
+          <span class="button-icon" aria-hidden="true">ℹ️</span>
+          <span class="button-copy"><strong>お知らせ</strong><small>新機能や補足情報をユーザーに案内します。</small></span>
+        </button>
+        <button class="open-button" data-demo="warning">
+          <span class="button-icon" aria-hidden="true">⚠️</span>
+          <span class="button-copy"><strong>警告</strong><small>未保存の変更など、続行前に注意を促します。</small></span>
+        </button>
+        <button class="open-button" data-demo="error">
+          <span class="button-icon" aria-hidden="true">❌</span>
+          <span class="button-copy"><strong>エラー詳細</strong><small>エラーの概要と詳細を分けて表示し、再試行できます。</small></span>
+        </button>
+        <button class="open-button" data-demo="confirm">
+          <span class="button-icon" aria-hidden="true">❔</span>
+          <span class="button-copy"><strong>確認ダイアログ</strong><small>設定を適用する前に、実行するか確認します。</small></span>
+        </button>
+        <button class="open-button" data-demo="list">
+          <span class="button-icon" aria-hidden="true">☑️</span>
+          <span class="button-copy"><strong>チェックリスト</strong><small>項目をチェックしながら、作業の進み具合を管理します。</small></span>
+        </button>
+        <button class="open-button" data-demo="progress">
+          <span class="button-icon" aria-hidden="true">⏳</span>
+          <span class="button-copy"><strong>進捗表示</strong><small>ボタンを押して、アップロードの進捗をシミュレートします。</small></span>
+        </button>
+        <button class="open-button" data-demo="long">
+          <span class="button-icon" aria-hidden="true">📝</span>
+          <span class="button-copy"><strong>説明付き通知</strong><small>複数行の説明を読みやすく配置するレイアウトです。</small></span>
+        </button>
+      </div>
+    </section>
+  </main>
 
   <!-- 指定されたJavaScriptの読み込み先 -->
   <script src="winbox0.2.82.bundle.min.js"></script>
